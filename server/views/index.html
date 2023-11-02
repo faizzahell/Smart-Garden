@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Sensor DHT22</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #2980B9, #6DD5FA); /* Efek gradasi latar belakang yang lebih indah */
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+
+        }
+
+        .container {
+            margin: 10px 0;
+            max-width: 600px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5); /* Latar belakang dengan transparansi */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Efek bayangan kotak */
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        #sensorData {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        #ambilDataButton {
+            background-color: #4CAF50; /* Warna tombol */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        #ambilDataButton:hover {
+            background-color: #45a049; /* Warna tombol saat dihover */
+        }
+    </style>
+</head>
+<script>
+  function readSensorDHT22() {
+    data = '1';
+    fetch("http://192.168.100.32:3000/data", {
+      method: "POST",
+      body: JSON.stringify({ data }),
+      headers: { "Content-Type": "application/json" }
+    })
+
+    if (data === '1') {
+      fetch('/api/valueMessage')
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Permintaan gagal');
+          }
+          return response.json();
+      })
+      .then(data => {
+          const sensorValueTemperature = document.getElementById('temperature');
+          const sensorValueHumidity = document.getElementById('humidity');
+          const sensorValueStatus = document.getElementById('status');
+          
+          sensorValueTemperature.textContent = `Temperature: ${data.temperature}  °C`;
+          sensorValueHumidity.textContent = `Humidity: ${data.humidity} %`;
+          sensorValueStatus.textContent = `Status: ${data.status}`;
+      })
+      .catch(error => {
+          console.error('Terjadi kesalahan:', error);
+      });
+    }
+  }
+
+  setInterval(readSensorDHT22, 2000)
+</script>
+<body>
+    <div class="container">
+        <h1>Monitor Sensor DHT</h1>
+        <p>Hasil Output Sensor:</p>
+        <div id="temperature">...</div>
+        <div id="humidity">...</div>
+    </div>
+    <div class="container">
+        <h1>Monitor Sensor LDR</h1>
+        <p>Hasil Output Sensor:</p>
+        <div id="status">...</div>
+    </div>
+</body>
+</html>
