@@ -23,7 +23,7 @@
 
         .container {
             margin: 10px 0;
-            max-width: 600px;
+            width: 300px;
             padding: 20px;
             background: rgba(0, 0, 0, 0.5); /* Latar belakang dengan transparansi */
             border-radius: 10px;
@@ -32,6 +32,15 @@
 
         h1 {
             font-size: 24px;
+        }
+
+        button {
+            width: 140px;
+            height: 50px;
+        }
+
+        #control {
+            margin-top: 10px;
         }
 
         #sensorData {
@@ -58,7 +67,7 @@
 <script>
   function readSensorDHT22() {
     data = '1';
-    fetch("http://192.168.100.32:3000/data", {
+    fetch("http://192.168.100.23:3000/data", {
       method: "POST",
       body: JSON.stringify({ data }),
       headers: { "Content-Type": "application/json" }
@@ -76,10 +85,17 @@
           const sensorValueTemperature = document.getElementById('temperature');
           const sensorValueHumidity = document.getElementById('humidity');
           const sensorValueStatus = document.getElementById('status');
+          const valueLedStatus = document.getElementById('ledStatus');
           
           sensorValueTemperature.textContent = `Temperature: ${data.temperature}  °C`;
           sensorValueHumidity.textContent = `Humidity: ${data.humidity} %`;
           sensorValueStatus.textContent = `Status: ${data.status}`;
+
+          if (data.status === "Gelap") {
+            valueLedStatus.textContent = 'Menyala'
+          } else if (data.status === "Terang") {
+            valueLedStatus.textContent = 'Padam'
+          }
       })
       .catch(error => {
           console.error('Terjadi kesalahan:', error);
@@ -90,6 +106,11 @@
   setInterval(readSensorDHT22, 2000)
 </script>
 <body>
+    <!-- <div class="container">
+        <button class="button" onclick="changeAuto()">Auto</button>
+        <button class="button" onclick="changeManual()">Manual</button>
+        <div id="control">...</div>
+    </div> -->
     <div class="container">
         <h1>Monitor Sensor DHT</h1>
         <p>Hasil Output Sensor:</p>
@@ -100,6 +121,15 @@
         <h1>Monitor Sensor LDR</h1>
         <p>Hasil Output Sensor:</p>
         <div id="status">...</div>
+    </div>
+    <!-- <div class="container">
+        <h1>Control Manual LED</h1>
+        <button class="button" onclick="changeAuto()">ON</button>
+        <button class="button" onclick="changeManual()">OFF</button>
+    </div> -->
+    <div class="container">
+        <h1>Status LED</h1>
+        <div id="ledStatus">...</div>
     </div>
 </body>
 </html>
