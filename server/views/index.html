@@ -38,42 +38,56 @@
             width: 140px;
             height: 50px;
         }
-
-        #control {
-            margin-top: 10px;
-        }
-
-        #sensorData {
-            font-size: 18px;
-            margin-top: 20px;
-        }
-
-        #ambilDataButton {
-            background-color: #4CAF50; /* Warna tombol */
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-
-        #ambilDataButton:hover {
-            background-color: #45a049; /* Warna tombol saat dihover */
-        }
     </style>
 </head>
 <script>
-  function readSensorDHT22() {
-    data = '1';
-    fetch("http://192.168.100.23:3000/data", {
+  let controllerLamp = '0';
+  let controllerPamp = '0';
+  let systemMode = '0';
+  
+  const trigger = '1';
+
+  function systemModeAuto(value) {
+    systemMode = value;
+  }
+
+  function systemModeManual(value) {
+    systemMode = value;
+  }
+
+  function controllerLampOff(value) {
+    controllerLamp = value;
+  }
+
+  function controllerLampOn(value) {
+    controllerLamp = value;
+  }
+
+  function controllerPampOff(value) {
+    controllerPamp = value;
+  }
+
+  function controllerPampOn(value) {
+    controllerPamp = value;
+  }
+
+  function readSensor() {
+    let dataInterface = [trigger, systemMode, controllerLamp, controllerPamp];
+    fetch("http://192.168.146.176:3000/data", {
       method: "POST",
-      body: JSON.stringify({ data }),
+      body: JSON.stringify({ dataInterface }),
       headers: { "Content-Type": "application/json" }
     })
 
-    if (data === '1') {
+    const remote = document.getElementById('controllerRemote');
+
+    if (systemMode === '1') {
+        remote.style.display = "block";
+    } else {
+        remote.style.display = "none";
+    }
+
+    if (trigger === '1') {
       fetch('/api/valueMessage')
       .then(response => {
           if (!response.ok) {
@@ -82,20 +96,25 @@
           return response.json();
       })
       .then(data => {
+          const sensorValueSoilHumidity = document.getElementById('soilHumidity');
           const sensorValueTemperature = document.getElementById('temperature');
           const sensorValueHumidity = document.getElementById('humidity');
           const sensorValueStatus = document.getElementById('status');
-          const valueLedStatus = document.getElementById('ledStatus');
+          const valueLampStatus = document.getElementById('lampStatus');
+          const valuePampStatus = document.getElementById('pampStatus');
           
+          sensorValueSoilHumidity.textContent = `Soil_Humidity: ${data.soil_humidity} %`;
           sensorValueTemperature.textContent = `Temperature: ${data.temperature}  °C`;
           sensorValueHumidity.textContent = `Humidity: ${data.humidity} %`;
           sensorValueStatus.textContent = `Status: ${data.status}`;
+          valuePampStatus.textContent = data.status_pamp;
 
           if (data.status === "Gelap") {
-            valueLedStatus.textContent = 'Menyala'
+            valueLampStatus.textContent = 'Menyala'
           } else if (data.status === "Terang") {
-            valueLedStatus.textContent = 'Padam'
+            valueLampStatus.textContent = 'Padam'
           }
+
       })
       .catch(error => {
           console.error('Terjadi kesalahan:', error);
@@ -103,14 +122,9 @@
     }
   }
 
-  setInterval(readSensorDHT22, 2000)
+  setInterval(readSensor, 2000)
 </script>
 <body>
-    <!-- <div class="container">
-        <button class="button" onclick="changeAuto()">Auto</button>
-        <button class="button" onclick="changeManual()">Manual</button>
-        <div id="control">...</div>
-    </div> -->
     <div class="container">
         <h1>Monitor Sensor DHT</h1>
         <p>Hasil Output Sensor:</p>
@@ -122,14 +136,46 @@
         <p>Hasil Output Sensor:</p>
         <div id="status">...</div>
     </div>
-    <!-- <div class="container">
-        <h1>Control Manual LED</h1>
-        <button class="button" onclick="changeAuto()">ON</button>
-        <button class="button" onclick="changeManual()">OFF</button>
-    </div> -->
     <div class="container">
-        <h1>Status LED</h1>
-        <div id="ledStatus">...</div>
+        <h1>Monitor Sensor Soil Moisture</h1>
+        <p>Hasil Output Sensor:</p>
+        <div id="soilHumidity">...</div>
+    </div>
+    <div class="container">
+        <h1>Status LAMP</h1>
+        <div id="lampStatus">...</div>
+    </div>
+    <div class="container">
+        <h1>Status PAMP</h1>
+        <div id="pampStatus">...</div>
+    </div>
+    <div class="container">
+        <h1>Control System Remote</h1>
+        <div class="wrapper-control">
+            <div class="remote-auto" style="padding: 5px; background-color:cadetblue; border-radius: 5px;">
+                <h1>System Mode</h1>
+                <div class="button-mode">
+                    <button onclick="systemModeAuto('0')" class="auto" style="font-weight: bold; border-radius: 5px; cursor: pointer;">Auto</button>
+                    <button onclick="systemModeManual('1')" class="manual" style="font-weight: bold; border-radius: 5px; cursor: pointer;">Manual</button>
+                </div>
+            </div>
+            <div id="controllerRemote" class="remote-controller" style="margin-top: 20px; padding: 5px; background-color: lightseagreen; border-radius: 5px; display: none;">
+                <div class="controller-lamp">
+                    <h1 style="background-color: chocolate;">Controller Lamp</h1>
+                    <div class="button-controller-lamp">
+                        <button onclick="controllerLampOff('0')" class="off" style="font-weight: bold; border-radius: 5px; cursor: pointer;">OFF</button>
+                        <button onclick="controllerLampOn('1')" class="on" style="font-weight: bold; border-radius: 5px; cursor: pointer;">ON</button>
+                    </div>
+                </div>
+                <div class="controller-pamp">
+                    <h1 style="background-color: chocolate;">Controller Pamp</h1>
+                    <div class="button-controller-pamp">
+                        <button onclick="controllerPampOff('0')" class="off" style="font-weight: bold; border-radius: 5px; cursor: pointer;">OFF</button>
+                        <button onclick="controllerPampOn('1')" class="on" style="font-weight: bold; border-radius: 5px; cursor: pointer;">ON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

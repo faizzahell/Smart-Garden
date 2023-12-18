@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 })
 
 app.post("/data", (req, res) => {
-  const data = req.body.data
+  const data = req.body.dataInterface
   
   wsServer.connections.forEach((connection) => {
     connection.send(data, (err) => {
@@ -39,7 +39,9 @@ app.get("/api/valueMessage", (req, res) => {
     res.json({ 
       temperature: jsonData.suhu,
       humidity: jsonData.kelembaban,
-      status: jsonData.status
+      status: jsonData.status,
+      soil_humidity: jsonData.kelembaban_soil,
+      status_pamp: jsonData.status_pompa
     });
   } else {
     res.status(404).json({ error: "Data tidak tersedia" });
